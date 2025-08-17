@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  pg:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: rag
+      POSTGRES_PASSWORD: ragpass
+      POSTGRES_DB: ragdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # ✅ auto-run at startup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rag -d ragdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ingestor:
+    build: 
+      context: ../services/ingestor
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DB_URL: postgresql://rag:ragpass@pg:5432/ragdb
+    volumes:
+      - ../config:/config
+      - ../data:/data   # folder with sample docs
+    depends_on: 
+      pg:
+        condition: service_healthy
+
+  rag-api:
+    build: 
+      context: ../services/rag-api
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DB_URL: postgresql://rag:ragpass@pg:5432/ragdb
+    ports:
+      - "8080:8080"
+    depends_on: [pg]
+
+volumes:
+  pgdata:
