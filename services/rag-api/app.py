@@ -20,26 +20,29 @@ def search_embeddings(query, k=3):
         input=query
     ).data[0].embedding
 
+    # Convert Python list -> string like "[0.123, -0.456, ...]"
+    emb_str = "[" + ",".join(str(x) for x in q_emb) + "]"
+
     # 2. Vector search
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor()
     cur.execute("""
         SELECT content, source
         FROM documents
-        ORDER BY embedding <-> %s
+        ORDER BY embedding <-> %s::vector
         LIMIT %s;
-    """, (q_emb, k))
+    """, (emb_str, k))
     rows = cur.fetchall()
     cur.close()
     conn.close()
     return rows
 
+
 @app.post("/query")
 def query(body: Query):
-    print(openai.api_key)
     docs = search_embeddings(body.q, body.top_k)
     context = "\n\n".join([d[0] for d in docs])
-
+    print(context)
     prompt = f"Answer based on context:\n{context}\n\nQuestion: {body.q}"
     completion = openai.chat.completions.create(
         model="gpt-4o-mini",

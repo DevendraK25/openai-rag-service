@@ -1,2 +1,4 @@
-openai
+PyYAML
 psycopg2-binary
+openai
+azure-storage-blob

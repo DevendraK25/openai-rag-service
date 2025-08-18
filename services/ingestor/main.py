@@ -1,7 +1,7 @@
 import os
 import psycopg2
 import openai
-from pathlib import Path
+from sources.loader import load_sources
 
 DB_URL = os.getenv("DB_URL")
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -13,7 +13,7 @@ def ensure_table():
     CREATE TABLE IF NOT EXISTS documents (
         id SERIAL PRIMARY KEY,
         content TEXT,
-        embedding VECTOR(3072),  -- dimension for text-embedding-3-large
+        embedding VECTOR(3072),
         source TEXT
     );
     """)
@@ -28,20 +28,25 @@ def embed_text(text: str):
     )
     return resp.data[0].embedding
 
-def ingest_folder(path="./data"):
+def ingest_all():
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor()
 
-    for file in Path(path).glob("*.txt"):
-        text = file.read_text()
-        emb = embed_text(text)
-        cur.execute("INSERT INTO documents (content, embedding, source) VALUES (%s, %s, %s)",
-                    (text, emb, str(file)))
+    sources = load_sources()
+    for src in sources:
+        for f in src.list_files():
+            text = src.read_file(f)
+            emb = embed_text(text)
+            cur.execute(
+                "INSERT INTO documents (content, embedding, source) VALUES (%s, %s, %s)",
+                (text, emb, str(f))
+            )
+
     conn.commit()
     cur.close()
     conn.close()
 
 if __name__ == "__main__":
     ensure_table()
-    ingest_folder("/data")
+    ingest_all()
     print("✅ Ingestion complete")

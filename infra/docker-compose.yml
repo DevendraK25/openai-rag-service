@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ragpass
       POSTGRES_DB: ragdb
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # ✅ auto-run at startup
@@ -23,8 +23,9 @@ services:
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       DB_URL: postgresql://rag:ragpass@pg:5432/ragdb
+      AZURE_BLOB_CONNECTION_STRING: ${AZURE_BLOB_CONNECTION_STRING}
     volumes:
-      - ../config:/config
+      - ../services/ingestor/config:/config
       - ../data:/data   # folder with sample docs
     depends_on: 
       pg:

@@ -1,0 +1,7 @@
+sources:
+  - type: local
+    path: /data
+  # - type: azure_blob
+  #   container: my-container
+  #   prefix: docs/
+  #   connection_string: ${AZURE_BLOB_CONNECTION_STRING}
