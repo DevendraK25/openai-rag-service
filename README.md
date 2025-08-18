@@ -14,3 +14,11 @@ OpenAI API key is required, as text-embedding-3-large and gpt-4o-mini are the mo
 After getting your API key, add it to your environment variables and cd into infra directory.
 
 Run: docker compose up --build
+
+# Using the Service
+
+After your docker-compose is running, query endpoint:
+
+curl -X POST http://localhost:8080/query \
+  -H "Content-Type: application/json" \
+  -d '{"q":"INSERT YOUR PROMPT HERE"}'
