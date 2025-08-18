@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-api
+spec:
+  replicas: {{ .Values.ragApi.replicas }}
+  selector:
+    matchLabels:
+      app: rag-api
+  template:
+    metadata:
+      labels:
+        app: rag-api
+    spec:
+      containers:
+      - name: rag-api
+        image: {{ .Values.ragApi.image }}
+        env:
+        - name: DB_URL
+          value: {{ .Values.ragApi.dbUrl }}
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.ragApi.secretName }}
+              key: openai
+        ports:
+        - containerPort: {{ .Values.ragApi.port }}

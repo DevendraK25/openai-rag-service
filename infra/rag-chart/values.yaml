@@ -1,0 +1,22 @@
+postgres:
+  user: rag
+  db: ragdb
+  password: "changeme"
+  pvcName: pgdata-pvc
+  storageSize: 1Gi
+
+ingestor:
+  image: infra-ingestor:latest
+  replicas: 1
+  dbUrl: "postgresql://rag:@postgres:5432/ragdb"
+  secretName: ingestor-secret
+  configMapName: ingestor-config
+  dataPvcName: ingestor-data-pvc
+
+ragApi:
+  image: infra-rag-api:latest
+  replicas: 1
+  dbUrl: "postgresql://rag:@postgres:5432/ragdb"
+  secretName: rag-api-secret
+  port: 8080
+

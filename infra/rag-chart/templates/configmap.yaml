@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.ingestor.configMapName }}
+data:
+  sources.yaml: |-
+{{ (.Files.Get "sources.yaml") | indent 4 }}

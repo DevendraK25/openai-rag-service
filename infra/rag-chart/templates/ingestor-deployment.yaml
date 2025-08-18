@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestor
+spec:
+  replicas: {{ .Values.ingestor.replicas }}
+  selector:
+    matchLabels:
+      app: ingestor
+  template:
+    metadata:
+      labels:
+        app: ingestor
+    spec:
+      containers:
+      - name: ingestor
+        image: {{ .Values.ingestor.image }}
+        env:
+        - name: DB_URL
+          value: {{ .Values.ingestor.dbUrl }}
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.ingestor.secretName }}
+              key: openai
+        - name: AZURE_BLOB_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.ingestor.secretName }}
+              key: azure
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Values.ingestor.configMapName }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.ingestor.dataPvcName }}

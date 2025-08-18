@@ -1,9 +1,11 @@
-# copilot-rag-platform
+# openai-rag-service
 
 A RAG service intended for enhancing your LLMs to give you curated, accurate responses based on your organization's data.
 
 Currently supports local storage, to run add .txt files to your /data folder that contain context
 to the problem you require solved. 
+
+Create the Chatbot perfect for your organization.
 
 # Running the Service
 
