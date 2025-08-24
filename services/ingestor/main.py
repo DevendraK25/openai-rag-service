@@ -2,6 +2,7 @@ import os
 import psycopg2
 import openai
 from sources.loader import load_sources
+import hashlib
 
 DB_URL = os.getenv("DB_URL")
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -14,7 +15,8 @@ def ensure_table():
         id SERIAL PRIMARY KEY,
         content TEXT,
         embedding VECTOR(3072),
-        source TEXT
+        source TEXT,
+        content_hash TEXT UNIQUE
     );
     """)
     conn.commit()
@@ -28,6 +30,9 @@ def embed_text(text: str):
     )
     return resp.data[0].embedding
 
+def compute_hash(text):
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
 def ingest_all():
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor()
@@ -36,11 +41,14 @@ def ingest_all():
     for src in sources:
         for f in src.list_files():
             text = src.read_file(f)
-            emb = embed_text(text)
-            cur.execute(
-                "INSERT INTO documents (content, embedding, source) VALUES (%s, %s, %s)",
-                (text, emb, str(f))
-            )
+            content_hash = compute_hash(text)
+            cur.execute("SELECT 1 FROM documents WHERE content_hash = %s", (content_hash,))
+            if cur.fetchone() is None:
+                emb = embed_text(text)
+                cur.execute(
+                    "INSERT INTO documents (content, embedding, source, content_hash) VALUES (%s, %s, %s, %s)",
+                    (text, emb, str(f), content_hash)
+                )
 
     conn.commit()
     cur.close()

@@ -6,7 +6,7 @@ postgres:
   storageSize: 1Gi
 
 ingestor:
-  image: infra-ingestor:latest
+  image: ingestor
   replicas: 1
   dbUrl: "postgresql://rag:@postgres:5432/ragdb"
   secretName: ingestor-secret
@@ -14,7 +14,7 @@ ingestor:
   dataPvcName: ingestor-data-pvc
 
 ragApi:
-  image: infra-rag-api:latest
+  image: rag-api
   replicas: 1
   dbUrl: "postgresql://rag:@postgres:5432/ragdb"
   secretName: rag-api-secret
