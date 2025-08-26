@@ -3,3 +3,5 @@ psycopg2-binary
 openai
 azure-storage-blob
 PyPDF2>=3.0
+sqlalchemy
+pandas
